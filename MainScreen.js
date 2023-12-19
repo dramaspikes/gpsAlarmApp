@@ -1,0 +1,198 @@
+// MainScreen.js
+import React, {useState} from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, Alert, ScrollView } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { useAlarmContext } from './AlarmContext';
+import Modal from 'react-native-modal';
+
+const MainScreen = ({ navigation }) => {
+ 
+    const { alarms, removeAlarm } = useAlarmContext();
+
+    const [selectedAlarm, setSelectedAlarm] = useState(null);
+    const [showInfoDialog, setShowInfoDialog] = useState(false);
+    const [isDeleteModalVisible, setDeleteModalVisible] = useState(false);
+
+    const openInfoDialog = () => {
+      setShowInfoDialog(true);
+    };
+  
+    const closeInfoDialog = () => {
+      setShowInfoDialog(false);
+    };
+
+
+  
+    const showDeleteModal = (alarm) => {
+      setSelectedAlarm(alarm);
+      setDeleteModalVisible(true);
+    };
+  
+    const hideDeleteModal = () => {
+      setDeleteModalVisible(false);
+    };
+  
+    const handleDelete = () => {
+     // Delete the selected alarm
+     if (selectedAlarm) {
+      removeAlarm(selectedAlarm.id);
+    }
+      // Close the modal
+      hideDeleteModal();
+    };
+
+    
+  return (
+    <View style={styles.container}>
+      {/* Toolbar */}
+      <View style={styles.toolbar}>
+        <Text style={styles.title}>Location Alarm</Text>
+        {/* Info Icon Button */}
+        <TouchableOpacity onPress={openInfoDialog}>
+            <Ionicons name="information-circle-outline" size={24} color="#454545"/>
+        </TouchableOpacity>
+
+      </View>
+
+      {/* "Set New Alarm" Button */}
+      <TouchableOpacity
+        style={styles.setAlarmButton}
+        onPress={() => navigation.navigate('SetNewAlarm')}
+      >
+        <Text style={styles.setAlarmButtonText}>Set New Alarm</Text>
+      </TouchableOpacity>
+      {showInfoDialog && (
+        <View style={styles.infoDialog}>
+        <Text style={styles.infoDialogTitle}>How to Use</Text>
+        <Text style={styles.infoDialogText}>
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. ...
+        </Text>
+        <TouchableOpacity style={styles.infoDialogButton} onPress={closeInfoDialog}>
+            <Text style={styles.infoDialogButtonText}>Close</Text>
+        </TouchableOpacity>
+    </View>
+    )}
+    <Text>My Alarms</Text>
+    <ScrollView>
+        {alarms.map((alarm, index) => (
+          <View key={index} style={styles.alarmCard}>
+            <Text style={styles.alarmCardText} >{alarm.alarmName + " can be found at:\n" + alarm.selectedLocation.longitude + ", " + alarm.selectedLocation.latitude + "."}</Text>
+            {/* Display other alarm details as needed */}
+            <TouchableOpacity style={styles.deleteButtonWrapper} onPress={() => showDeleteModal(alarm)}>
+              <Ionicons name="ios-close-circle" size={24} color="red" />
+            </TouchableOpacity>
+          </View>
+        ))}
+      </ScrollView>
+      {/* Delete Alarm Modal */}
+      <Modal isVisible={isDeleteModalVisible}>
+        <View style={styles.modalContainer}>
+          <Text>Do you want to delete the alarm "{selectedAlarm?.alarmName}"?</Text>
+          <View style={styles.modalButtons}>
+            <TouchableOpacity onPress={handleDelete}>
+              <Text style={styles.modalButton}>Yes</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={hideDeleteModal}>
+              <Text style={styles.modalButton}>No</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  alarmCard: {
+    backgroundColor: '#242424',
+    padding: 5,
+    marginVertical: 10,
+    borderStyle: 'solid',
+    borderWidth: 2,
+    borderRadius: 10,
+    shadowOffset: 1,
+    shadowColor: 'grey',
+    fontWeight: '500',
+    color: '#fefefe',
+  },
+  alarmCardText:{
+    color: "#fefefe",
+  },
+  container: {
+    flex: 1,
+    padding:16
+  },
+  deleteButtonWrapper: {
+    backgroundColor: "#444400"
+  },
+  modalContainer: {
+    backgroundColor: '#fff',
+    padding: 16,
+    borderRadius: 8,
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginTop: 16,
+  },
+  modalButton: {
+    color: '#3498db',
+    fontSize: 18,
+  },
+  toolbar: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+  },
+  setAlarmButton: {
+    backgroundColor: '#3498db',
+    padding: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  setAlarmButtonText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  infoDialog: {
+    backgroundColor: '#fff',
+    padding: 16,
+    borderRadius: 8,
+    height:'auto',
+    width: '100%',
+    position:'absolute',
+    marginLeft:16,
+    marginTop:10,
+    zIndex: 2,
+    elevation: 3,
+  },
+  infoDialogTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 8,
+  },
+  infoDialogText: {
+    fontSize: 16,
+    marginBottom: 16,
+  },
+  infoDialogButton: {
+    backgroundColor: '#3498db',
+    padding: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  infoDialogButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  
+});
+
+export default MainScreen;
