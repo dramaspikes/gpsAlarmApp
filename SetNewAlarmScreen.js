@@ -1,11 +1,12 @@
 // SetNewAlarmScreen.js
 import React, { useState, useEffect, useLayoutEffect } from 'react';
-import { StyleSheet, View, Text } from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity, Alert } from 'react-native';
 import { Input, Slider, Button } from '@rneui/base'; 
 import MapView, { Marker, Circle } from 'react-native-maps';
 import { Picker } from '@react-native-picker/picker';
 import * as Location from 'expo-location';
 import { useAlarmContext } from './AlarmContext';
+import Modal from 'react-native-modal';
 
 
 const SetNewAlarmScreen = ({navigation}) => {
@@ -15,6 +16,10 @@ const SetNewAlarmScreen = ({navigation}) => {
   //const [selectedSound, setSelectedSound] = useState('sound1');
   const [initialRegion, setInitialRegion] = useState(null);
   const { addAlarm } = useAlarmContext();
+  const [modalMessage, setModalMessage] = useState('');
+  const [currentLocation, setCurrentLocation] = useState(null);
+  const [isModalVisible, setModalVisible] = useState(false);
+
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -40,6 +45,11 @@ useEffect(() => {
       latitudeDelta: 0.01,
       longitudeDelta: 0.01,
     });
+    // Set the current location
+    setCurrentLocation({
+      latitude,
+      longitude,
+    });
   })();
 }, []);
 
@@ -48,6 +58,27 @@ useEffect(() => {
   };
   
   const handleConfirm = () => {
+// Check if all required fields are filled
+    if (!alarmName) {
+      showAlert('Alarm Name is required.');
+      return;
+    }
+
+    if (!selectedLocation) {
+      showAlert('Selected Location is required.');
+      return;
+    }
+
+    if (!geofenceRadius) {
+      showAlert('Geofence Radius is required.');
+      return;
+    }
+
+      // Check if the current location is inside the geofence radius
+    if (isCurrentLocationInsideRadius()) {
+      showAlert('Your current location must be outside the geofence radius.');
+      return;
+  }
     // TODO: Implement logic to save the alarm with selected parameters
     // For now, you can log the selected values
     console.log('Alarm Name:', alarmName);
@@ -58,6 +89,58 @@ useEffect(() => {
 
     // Navigate back to the main screen
     navigation.goBack();
+  };
+
+  const isCurrentLocationInsideRadius = () => {
+    // Assuming you have the current location available
+    // Check if the distance between the current location and the selected location is within the geofence radius
+    if (selectedLocation) {
+      const distance = calculateDistance(currentLocation, selectedLocation);
+  
+      return distance <= geofenceRadius / 1000;
+    }
+  
+    return false;
+  };
+  
+  const calculateDistance = (location1, location2) => {
+    // Implement a function to calculate the distance between two coordinates
+    // You can use the Haversine formula or a library like geolib
+    // Here's a simple example using the Haversine formula:
+    const R = 6371; // Radius of the Earth in kilometers
+    const lat1 = toRadians(location1.latitude);
+    const lon1 = toRadians(location1.longitude);
+    const lat2 = toRadians(location2.latitude);
+    const lon2 = toRadians(location2.longitude);
+  
+    const dlat = lat2 - lat1;
+    const dlon = lon2 - lon1;
+  
+    const a =
+      Math.sin(dlat / 2) * Math.sin(dlat / 2) +
+      Math.cos(lat1) * Math.cos(lat2) * Math.sin(dlon / 2) * Math.sin(dlon / 2);
+  
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  
+    const distance = R * c;
+  
+    return distance;
+  };
+  
+  const toRadians = (angle) => {
+    return (angle * Math.PI) / 180;
+  };
+
+  const showAlert = (message) => {
+    // Set the modalMessage to mention the specific missing field
+    setModalMessage(message);
+    setModalVisible(true);
+  };
+
+  const closeModal = () => {
+    // Reset the state to preserve entered data
+    setModalVisible(false);
+    setModalMessage('');
   };
 
   const formattedRadius = geofenceRadius.toPrecision(5);
@@ -129,12 +212,33 @@ useEffect(() => {
         title="Confirm"
         buttonStyle={styles.confirmButton}
         onPress={() => handleConfirm()}
-      />
+        />
+      {/* Modal for alerting the user */}
+      <Modal style={styles.modal} visible={isModalVisible} animationType="slide">
+        <View style={styles.modalContainer}>
+          <Text style={styles.modalTitle}>Missing Information</Text>
+          <Text style={styles.modalMessage}>{modalMessage}</Text>
+          <TouchableOpacity style={styles.modalButton} onPress={closeModal}>
+            <Text style={styles.modalButtonText}>Close</Text>
+          </TouchableOpacity>
+        </View>
+      </Modal>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
+  confirmButton: {
+    backgroundColor: '#3498db',
+    padding: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  confirmButtonText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
   container: {
     flex: 1,
     padding: 16,
@@ -155,6 +259,10 @@ const styles = StyleSheet.create({
     borderStyle: 'dotted',
     overflow: 'hidden'
   },
+  label: {
+    fontSize: 18,
+    marginBottom: 8,
+  },
   mapWrapper: {
     flex: 1,
     height: 200,
@@ -166,25 +274,53 @@ const styles = StyleSheet.create({
     width: 'auto',
     height: 'auto'
   },
-  label: {
+  modal: {
+    flex: 1,
+    maxHeight: 300,
+    justifyContent: 'center',
+    marginTop: 'auto',
+    marginBottom: 'auto',
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#999999',
+    borderRadius: 8,
+    margin: 20,
+    padding: 16,
+  },
+  
+  modalTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+  
+  modalMessage: {
     fontSize: 18,
-    marginBottom: 8,
+    marginBottom: 16,
+    textAlign: 'center',
   },
-  slider: {
-    width: '100%',
-    marginBottom: 5
-  },
-  confirmButton: {
+  
+  modalButton: {
     backgroundColor: '#3498db',
     padding: 12,
     borderRadius: 8,
     alignItems: 'center',
   },
-  confirmButtonText: {
+  
+  modalButtonText: {
     color: '#fff',
     fontSize: 18,
     fontWeight: 'bold',
   },
+  slider: {
+    width: '100%',
+    marginBottom: 5
+  },
+
 });
 
 
