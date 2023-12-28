@@ -83,9 +83,13 @@ const MainScreen = ({ navigation }) => {
       </TouchableOpacity>
       {showInfoDialog && (
         <View style={styles.infoDialog}>
-        <Text style={styles.infoDialogTitle}>How to Use</Text>
+        <Text style={styles.infoDialogTitle}>How to Use GPSAlarm</Text>
         <Text style={styles.infoDialogText}>
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. ...
+        Welcome to GPSAlarm! To set an alarm, press the "Set New Alarm" button.{"\n\n"}
+        
+        There you can name your alarm, choose a target location on the map, as well as a radius within which you would like to be notified. Press "Confirm" to add your alarm.{"\n\n"}
+        
+        You can delete your alarm by pressing the red x next to its name on the home screen.
         </Text>
         <TouchableOpacity style={styles.infoDialogButton} onPress={closeInfoDialog}>
             <Text style={styles.infoDialogButtonText}>Close</Text>
