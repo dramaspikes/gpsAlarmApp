@@ -1,9 +1,11 @@
 // MainScreen.js
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Alert, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAlarmContext } from './AlarmContext';
 import Modal from 'react-native-modal';
+import * as Location from 'expo-location';
+
 
 const MainScreen = ({ navigation }) => {
  
@@ -40,6 +42,24 @@ const MainScreen = ({ navigation }) => {
       // Close the modal
       hideDeleteModal();
     };
+
+    // Start background location tracking when the MainScreen mounts
+    useEffect(() => {
+      if (alarms.length > 0) {
+        startBackgroundLocationTracking();
+      }
+    }, [alarms]);
+
+  const startBackgroundLocationTracking = async () => {
+    await Location.startLocationUpdatesAsync('backgroundLocationUpdates', {
+      accuracy: Location.Accuracy.BestForNavigation,
+      timeInterval: 5000, // 5 seconds (adjust as needed)
+      foregroundService: {
+        notificationTitle: 'Location Tracking',
+        notificationBody: 'Active',
+      },
+    });
+  };
 
     
   return (

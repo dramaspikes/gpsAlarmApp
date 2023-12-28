@@ -79,20 +79,16 @@ useEffect(() => {
       showAlert('Your current location must be outside the geofence radius.');
       return;
   }
-    // TODO: Implement logic to save the alarm with selected parameters
-    // For now, you can log the selected values
-    console.log('Alarm Name:', alarmName);
-    console.log('Selected Location:', selectedLocation);
-    console.log('Radius:', geofenceRadius);
+
     // Add the new alarm to the context
     addAlarm({ alarmName, selectedLocation, geofenceRadius });
-
+    // Start background location tracking
+    startBackgroundLocationTracking();
     // Navigate back to the main screen
     navigation.goBack();
   };
 
   const isCurrentLocationInsideRadius = () => {
-    // Assuming you have the current location available
     // Check if the distance between the current location and the selected location is within the geofence radius
     if (selectedLocation) {
       const distance = calculateDistance(currentLocation, selectedLocation);
@@ -105,8 +101,7 @@ useEffect(() => {
   
   const calculateDistance = (location1, location2) => {
     // Implement a function to calculate the distance between two coordinates
-    // You can use the Haversine formula or a library like geolib
-    // Here's a simple example using the Haversine formula:
+    // using the Haversine formula
     const R = 6371; // Radius of the Earth in kilometers
     const lat1 = toRadians(location1.latitude);
     const lon1 = toRadians(location1.longitude);
@@ -145,7 +140,18 @@ useEffect(() => {
 
   const formattedRadius = geofenceRadius.toPrecision(5);
 
-  // TODO: Add functions to handle location selection, radius changes, and sound selection
+  const startBackgroundLocationTracking = async () => {
+    await Location.startLocationUpdatesAsync('backgroundLocationUpdates', {
+      accuracy: Location.Accuracy.BestForNavigation,
+      timeInterval: 5000, // 5 seconds (adjust as needed)
+      foregroundService: {
+        notificationTitle: 'Location Tracking',
+        notificationBody: 'Active',
+      },
+    });
+  };
+
+
   return ( 
     <View style={styles.container}>
       {/*<Text h4 style={styles.title}>Set New Alarm</Text>*/}
@@ -177,8 +183,8 @@ useEffect(() => {
               <Circle
                 center={selectedLocation}
                 radius={geofenceRadius}
-                fillColor="rgba(255, 0, 0, 0.2)" // Adjust the fill color as needed
-                strokeColor="rgba(255, 0, 0, 0.8)" // Adjust the stroke color as needed
+                fillColor="rgba(255, 0, 0, 0.2)" 
+                strokeColor="rgba(255, 0, 0, 0.8)" 
               />
             </>
           )} 
