@@ -96,15 +96,21 @@ const MainScreen = ({ navigation }) => {
         </TouchableOpacity>
     </View>
     )}
-    <Text>My Alarms</Text>
+    <Text style={styles.alarmScrollHeader}>My Alarms</Text>
     <ScrollView>
         {alarms.map((alarm, index) => (
           <View key={index} style={styles.alarmCard}>
-            <Text style={styles.alarmCardText} >{alarm.alarmName + " can be found at:\n" + alarm.selectedLocation.longitude + ", " + alarm.selectedLocation.latitude + "."}</Text>
+            <View style={styles.cardContent}>
+              
+              {/* <Text style={styles.alarmCardText} >{alarm.alarmName + " can be found at:\n" + alarm.selectedLocation.longitude + ", " + alarm.selectedLocation.latitude + "."}</Text> */}
+              <Text style={styles.alarmCardText} numberOfLines={1}>{alarm.alarmName}</Text>
+            </View>
             {/* Display other alarm details as needed */}
-            <TouchableOpacity style={styles.deleteButtonWrapper} onPress={() => showDeleteModal(alarm)}>
-              <Ionicons name="ios-close-circle" size={24} color="red" />
-            </TouchableOpacity>
+            <View style={styles.deleteButtonContainer}>
+              <TouchableOpacity style={styles.deleteButtonWrapper} onPress={() => showDeleteModal(alarm)}>
+                <Ionicons name="ios-close-circle" size={36} color="red" />
+              </TouchableOpacity>
+            </View>
           </View>
         ))}
       </ScrollView>
@@ -138,16 +144,39 @@ const styles = StyleSheet.create({
     shadowColor: 'grey',
     fontWeight: '500',
     color: '#fefefe',
+    flexDirection: 'row',
   },
   alarmCardText:{
     color: "#fefefe",
+    fontWeight: '600',
+    fontSize: 30,
+    marginLeft:10,    
+    flex: 1,
+    flexWrap: 'wrap',
+  },
+  alarmScrollHeader:{
+    marginBottom:10,
+    marginTop:30,
+    fontSize: 30,
+    fontWeight: '900',
+    fontFamily: 'sans-serif',
+    alignSelf:'center',
+  },
+  cardContent: {
+    flex: 8,
+    marginVertical: 15
   },
   container: {
     flex: 1,
     padding:16
   },
+  deleteButtonContainer: {
+    flex:2,
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
   deleteButtonWrapper: {
-    backgroundColor: "#444400"
+    // backgroundColor: "#444400"
   },
   modalContainer: {
     backgroundColor: '#fff',
